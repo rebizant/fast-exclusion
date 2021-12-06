@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Data store holding the linked list and a boolean table for marking
+ * values as removed. Thanks to that the main map (linked list) is not modified
+ * thus can be cached an shared among invocations
+ */
 public class DataStore {
 
     private final Boolean[] deletedMarker;
@@ -17,10 +22,24 @@ public class DataStore {
         this.deletedMarker = new Boolean[store.size()];
     }
 
+    /**
+     * computation complexity O(n)
+     *
+     * @param attributesToRemove
+     */
     public void removeAll(Collection<String> attributesToRemove) {
+        // element are not removed only marked as delete in the external table
         attributesToRemove.forEach(key -> Optional.ofNullable(store.get(key)).ifPresent(node -> deletedMarker[node.index] = Boolean.TRUE));
     }
 
+    /**
+     * Thanks to using hashmap and a table
+     * the computation complexity is about O(quantity) so is independent of the size of the value list
+     *
+     * @param attribute value after which the consequent element should be extracted (excluding this value)
+     * @param quantity  how many consequent values should be returned
+     * @return
+     */
     public List<String> getNextFollowingElements(String attribute, int quantity) {
         Node node = store.get(attribute);
         if (node == null) {

@@ -24,6 +24,14 @@ public class DataStoreFactory {
         return store;
     }
 
+    /**
+     * Initial preparation of a hashmap and a simple implementation
+     * of the linked list over the hashmap
+     * Thanks to that, checking if value is in the list is very fast (constant time independent of the size of the list)
+     *
+     * @param values
+     * @return
+     */
     private Map<String, Node> prepareMap(List<String> values) {
 
         if (values == null || values.isEmpty()) {
@@ -33,6 +41,7 @@ public class DataStoreFactory {
         Node previousNode = new Node(values.get(0), 0);
         store.put(previousNode.value, previousNode);
         int size = values.size();
+        // preparing the linked list with fast elements retrieval by the value
         for (int i = 1; i < size; i++) {
             Node newNode = new Node(values.get(i), i);
             previousNode.next = newNode;
