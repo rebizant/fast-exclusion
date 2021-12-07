@@ -10,14 +10,16 @@ import java.util.Optional;
 /**
  * Data store holding the linked list and a boolean table for marking
  * values as removed. Thanks to that the main map (linked list) is not modified
- * thus can be cached an shared among invocations
+ * thus can be cached and shared among invocations
  */
 public class DataStore {
 
     private final Boolean[] deletedMarker;
+    private final Node firstElement;
     private final Map<String, Node> store;
 
-    public DataStore(Map<String, Node> store) {
+    public DataStore(Node firstElement, Map<String, Node> store) {
+        this.firstElement = firstElement;
         this.store = store;
         this.deletedMarker = new Boolean[store.size()];
     }
@@ -41,17 +43,32 @@ public class DataStore {
      * @return
      */
     public List<String> getNextFollowingElements(String attribute, int quantity) {
+
+        if (quantity <= 0) {
+            return Collections.emptyList();
+        }
+
+        if (attribute == null) {
+            return getElements(quantity, firstElement);
+        }
         Node node = store.get(attribute);
         if (node == null) {
             return Collections.emptyList();
         }
+        return getElements(quantity, node.next);
+    }
+
+    private List<String> getElements(int quantity, Node node) {
+        if (node == null) {
+            return Collections.emptyList();
+        }
         List<String> result = new ArrayList<>(quantity);
-        while (node.next != null && quantity > 0) {
-            node = node.next;
+        while (node != null && quantity > 0) {
             if (!isDeleted(node)) {
                 quantity--;
                 result.add(node.value);
             }
+            node = node.next;
         }
         return result;
     }

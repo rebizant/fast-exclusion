@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.example.service.CacheService;
 import com.example.service.DataProvider;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -45,6 +46,23 @@ public class DataStoreTest {
         System.out.println(" computation time : " + (System.currentTimeMillis() - current) + " ms");
         System.out.println(Arrays.toString(nextFollowingElements.toArray()));
         System.out.println("Size : " + nextFollowingElements.size());
+    }
+
+    @Test
+    void testGetFromBeginning() {
+        DataProvider dataProvider = Mockito.mock(DataProvider.class);
+        int size = 500000;
+        List<String> data = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            data.add("sample-value-" + i);
+        }
+        Mockito.when(dataProvider.getData()).thenReturn(data);
+
+        DataStoreFactory factory = new DataStoreFactory(dataProvider, new CacheService<>());
+        factory.init();
+        DataStore dataStore = factory.getDataStore();
+        List<String> nextFollowingElements = dataStore.getNextFollowingElements(null, 3);
+        Assertions.assertThat(nextFollowingElements).containsExactly("sample-value-0", "sample-value-1", "sample-value-2");
     }
 
 }

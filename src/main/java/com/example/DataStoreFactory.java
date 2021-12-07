@@ -1,6 +1,5 @@
 package com.example;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,15 +10,15 @@ import com.example.service.DataProvider;
 public class DataStoreFactory {
 
     private final DataProvider dataProvider;
-    private final CacheService<Map<String, Node>> cacheService;
+    private final CacheService<ComplexStore> cacheService;
 
-    public DataStoreFactory(DataProvider dataProvider, CacheService<Map<String, Node>> cacheService) {
+    public DataStoreFactory(DataProvider dataProvider, CacheService<ComplexStore> cacheService) {
         this.dataProvider = dataProvider;
         this.cacheService = cacheService;
     }
 
-    public Map<String, Node> init() {
-        Map<String, Node> store = prepareMap(dataProvider.getData());
+    public ComplexStore init() {
+        ComplexStore store = prepareMap(dataProvider.getData());
         cacheService.putInCache("store", store);
         return store;
     }
@@ -32,13 +31,14 @@ public class DataStoreFactory {
      * @param values
      * @return
      */
-    private Map<String, Node> prepareMap(List<String> values) {
+    private ComplexStore prepareMap(List<String> values) {
 
         if (values == null || values.isEmpty()) {
-            return Collections.emptyMap();
+            return new ComplexStore();
         }
         Map<String, Node> store = new HashMap<>(values.size());
         Node previousNode = new Node(values.get(0), 0);
+        ComplexStore complexStore = new ComplexStore(store, previousNode);
         store.put(previousNode.value, previousNode);
         int size = values.size();
         // preparing the linked list with fast elements retrieval by the value
@@ -48,12 +48,12 @@ public class DataStoreFactory {
             store.put(newNode.value, newNode);
             previousNode = newNode;
         }
-        return store;
+        return complexStore;
     }
 
     public DataStore getDataStore() {
-        Map<String, Node> store = cacheService.getFromCache("store").orElseGet(this::init);
-        return new DataStore(store);
+        ComplexStore store = cacheService.getFromCache("store").orElseGet(this::init);
+        return new DataStore(store.getFirstEntry(), store.getStore());
     }
 
 }
